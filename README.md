@@ -1,7 +1,7 @@
 # roccat-kone-aimo
-Backengineering done by me by monitoring /dev/hidraw. Using hidapi's test.c as starting block and letting AI complete the uinput stuff for linux. Still in progress.
+Backengineering done by me by monitoring /dev/hidraw. Using hidapi's test.c as a starting point and letting AI complete the uinput stuff for Linux. Still in progress.
 
-This was done for a personal use-case. Be aware that despite this being a small code-base, that this project might impose a serious security risk. Use with discretion.
+This was done for a personal use case. Be aware that, despite the small codebase, this project might pose a serious security risk. Use with discretion.
 
 ## Todo 
 - add scroll wheel left and right flick buttons
