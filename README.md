@@ -6,3 +6,4 @@ This was done for a personal use-case. Be aware that despite this being a small 
 ## Todo: 
 - use diff. keycodes: https://pickpj.github.io/keycodes.html
 - make it easily usable for NixOs as flake.
+- Do we need udev rules?
