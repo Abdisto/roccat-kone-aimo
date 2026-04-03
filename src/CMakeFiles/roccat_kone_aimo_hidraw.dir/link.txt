@@ -1,0 +1,1 @@
+/nix/store/hb2bs5fg5wkm04x565737qd5nh2hy5nk-gcc-wrapper-15.2.0/bin/gcc -Wl,--dependency-file=CMakeFiles/roccat_kone_aimo_hidraw.dir/link.d CMakeFiles/roccat_kone_aimo_hidraw.dir/main.c.o -o roccat_kone_aimo_hidraw  /nix/store/waz1m6i1107559hfdqk5nj9wn4ysan5j-hidapi-0.15.0/lib/libhidapi-hidraw.so.0.15.0

@@ -1,0 +1,243 @@
+could you complete my code? i already commented in what inputs we want to capture.
+we need to create a virtal hid device that receivces those inputs in whatever fashion you like. maybe giving those a special code or such.
+
+/*******************************************************
+ HIDAPI - Multi-Platform library for
+ communication with HID devices.
+
+ Alan Ott
+ Signal 11 Software
+
+ libusb/hidapi Team
+
+ Copyright 2022.
+
+ This contents of this file may be used by anyone
+ for any reason without any conditions and may be
+ used as a starting point for your own applications
+ which use HIDAPI.
+********************************************************/
+
+#include <stdio.h>
+#include <wchar.h>
+#include <string.h>
+#include <stdlib.h>
+
+#include <hidapi.h>
+
+// Headers needed for sleeping.
+#ifdef _WIN32
+    #include <windows.h>
+#else
+    #include <unistd.h>
+#endif
+
+// Fallback/example
+#ifndef HID_API_MAKE_VERSION
+#define HID_API_MAKE_VERSION(mj, mn, p) (((mj) << 24) | ((mn) << 8) | (p))
+#endif
+#ifndef HID_API_VERSION
+#define HID_API_VERSION HID_API_MAKE_VERSION(HID_API_VERSION_MAJOR, HID_API_VERSION_MINOR, HID_API_VERSION_PATCH)
+#endif
+
+//
+// Sample using platform-specific headers
+#if defined(__APPLE__) && HID_API_VERSION >= HID_API_MAKE_VERSION(0, 12, 0)
+#include <hidapi_darwin.h>
+#endif
+
+#if defined(_WIN32) && HID_API_VERSION >= HID_API_MAKE_VERSION(0, 12, 0)
+#include <hidapi_winapi.h>
+#endif
+
+#if defined(USING_HIDAPI_LIBUSB) && HID_API_VERSION >= HID_API_MAKE_VERSION(0, 12, 0)
+#include <hidapi_libusb.h>
+#endif
+//
+
+int main(int argc, char* argv[])
+{
+    (void)argc;
+    (void)argv;
+
+    /* --- HIDAPI R&D: this is just to force the compiler to ensure
+           each of those functions are implemented (even as a stub)
+           by each backend. --- */
+    (void)&hid_open;
+    (void)&hid_open_path;
+    (void)&hid_read_timeout;
+    (void)&hid_get_input_report;
+#if HID_API_VERSION >= HID_API_MAKE_VERSION(0, 15, 0)
+    (void)&hid_send_output_report;
+#endif
+    (void)&hid_get_feature_report;
+    (void)&hid_send_feature_report;
+#if HID_API_VERSION >= HID_API_MAKE_VERSION(0, 14, 0)
+    (void)&hid_get_report_descriptor;
+#endif
+    /* --- */
+
+    int res;
+    unsigned char buf[256];
+    #define MAX_STR 255
+    wchar_t wstr[MAX_STR];
+    hid_device *handle;
+    int i;
+
+    struct hid_device_info *devs;
+
+    printf("hidapi test/example tool. Compiled with hidapi version %s, runtime version %s.\n", HID_API_VERSION_STR, hid_version_str());
+    if (HID_API_VERSION == HID_API_MAKE_VERSION(hid_version()->major, hid_version()->minor, hid_version()->patch)) {
+        printf("Compile-time version matches runtime version of hidapi.\n\n");
+    }
+    else {
+        printf("Compile-time version is different than runtime version of hidapi.\n]n");
+    }
+
+    if (hid_init())
+        return -1;
+
+#if defined(__APPLE__) && HID_API_VERSION >= HID_API_MAKE_VERSION(0, 12, 0)
+    // To work properly needs to be called before hid_open/hid_open_path after hid_init.
+    // Best/recommended option - call it right after hid_init.
+    hid_darwin_set_open_exclusive(0);
+#endif
+
+    devs = hid_enumerate(0x0, 0x0);
+    hid_free_enumeration(devs);
+
+    // Set up the command buffer.
+    memset(buf,0x00,sizeof(buf));
+    buf[0] = 0x01;
+    buf[1] = 0x81;
+
+    // Open the device using the VID, PID,
+    // and optionally the Serial number.
+    ////handle = hid_open(0x4d8, 0x3f, L"12345");
+    handle = hid_open(0x1e7d, 0x2e27, NULL);
+    if (!handle) {
+        printf("unable to open device\n");
+        hid_exit();
+         return 1;
+    }
+
+#if defined(_WIN32) && HID_API_VERSION >= HID_API_MAKE_VERSION(0, 15, 0)
+    hid_winapi_set_write_timeout(handle, 5000);
+#endif
+    // Try to read from the device. There should be no
+    // data here, but execution should not block.
+    res = hid_read(handle, buf, 17);
+    if (res < 0) {
+#if HID_API_VERSION >= HID_API_MAKE_VERSION(0, 15, 0)
+        printf("Unable to read from device: %ls\n", hid_read_error(handle));
+#else
+        printf("Unable to read from device: %ls\n", hid_error(handle));
+#endif
+    }
+
+    // Send a Feature Report to the device
+    buf[0] = 0x2;
+    buf[1] = 0xa0;
+    buf[2] = 0x0a;
+    buf[3] = 0x00;
+    buf[4] = 0x00;
+    res = hid_send_feature_report(handle, buf, 17);
+    if (res < 0) {
+        printf("Unable to send a feature report: %ls\n", hid_error(handle));
+    }
+
+    memset(buf,0,sizeof(buf));
+
+    // Read a Feature Report from the device
+    buf[0] = 0x2;
+
+    memset(buf,0,sizeof(buf));
+
+    // Request state (cmd 0x81). The first byte is the report number (0x1).
+    buf[0] = 0x1;
+    buf[1] = 0x81;
+    hid_write(handle, buf, 17);
+    if (res < 0) {
+        printf("Unable to write()/2: %ls\n", hid_error(handle));
+    }
+
+    // Read requested state. hid_read() has been set to be
+    // non-blocking by the call to hid_set_nonblocking() above.
+    // This loop demonstrates the non-blocking nature of hid_read().
+    res = 0;
+    i = 0;
+
+    for(;;) {
+        if ((res = hid_read(handle, buf, sizeof(buf))) > 0) {
+            if (res < 0) {
+                printf("Unable to read(): %ls\n", hid_error(handle));
+                break;
+            }
+            for (i = 0; i < res; i++) {
+                // add logic here what to ignore and what not
+                //
+                // mouse-up     - ignore
+                // mouse-left   - ignore
+                // mouse-right  - ignore
+                // mouse-down   - ignore
+                //
+                // left-btn     - ignore
+                // right-btn    - ignore
+                //
+                // scroll-up    - ignore
+                // scroll-down  - ignore
+                // scroll-press - ignore
+                //
+                // dpi-plus     - ignore
+                // dpi-minus    - ignore
+                //
+                // LShift+      - read [is it enough to implement only this and make comb. with ext. software eg. hyprland binds]
+                // 03 00 ee 02 00 press
+                // 03 00 ee 00 00 release
+                //
+                // left-btn     - read
+                // 03 00 ef 02 01 press
+                // 03 00 ef 02 00 release
+                //
+                // right-btn    - read
+                // 03 00 ef 02 02 press
+                // 03 00 ef 02 00 release
+                //
+                // scroll-press - read
+                // 03 00 f0 23 00 press
+                // 03 00 f0 23 01 release
+                //
+                // side-btn-1   - ify [hard to press doesn't even register]
+                // side-btn-2   - ify
+                //
+                // scroll       - already works somehow???
+                //
+                // dpi-plus     - ignore [out of scope and will prob. introduce issues since those profiles still exist mouse intern]
+                // dpi-minus    - ignore
+                //
+                // create virtual device and add those inputs
+                // /dev/input/event10:    ROCCAT ROCCAT Kone Aimo Mouse
+                // /dev/input/event11:    ROCCAT ROCCAT Kone Aimo Consumer Control
+                // /dev/input/event12:    ROCCAT ROCCAT Kone Aimo System Control
+                // /dev/input/event13:    ROCCAT ROCCAT Kone Aimo
+                //
+                // /dev/input/event--:  ROCCAT ROCCAT Kone Aimo Virutal Control
+                //
+                printf("%02x ", (unsigned int) buf[i]);
+            }
+            printf("\n");
+            i = 0;
+        }
+    }
+
+    hid_close(handle);
+
+    /* Free static HIDAPI objects. */
+    hid_exit();
+
+#ifdef _WIN32
+    system("pause");
+#endif
+
+    return 0;
+}
