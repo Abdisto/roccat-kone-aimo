@@ -26,10 +26,10 @@ int setup_virtual_device() {
     ioctl(fd, UI_SET_EVBIT, EV_KEY);
     ioctl(fd, UI_SET_EVBIT, EV_SYN);
 
-    ioctl(fd, UI_SET_KEYBIT, KEY_DATA);
-    ioctl(fd, UI_SET_KEYBIT, KEY_LEFTSHIFT);
-    ioctl(fd, UI_SET_KEYBIT, KEY_C);
-    ioctl(fd, UI_SET_KEYBIT, KEY_V);
+    ioctl(fd, UI_SET_KEYBIT, KEY_F24);
+    ioctl(fd, UI_SET_KEYBIT, KEY_F23);
+    ioctl(fd, UI_SET_KEYBIT, KEY_F22);
+    ioctl(fd, UI_SET_KEYBIT, KEY_F21);
 
     struct uinput_setup usetup = {0};
     usetup.id.bustype = BUS_USB;
@@ -117,9 +117,9 @@ int main(void)
             // --- EasyShift+ button -> Super ---
             if (code == 0xee) {
                 if (state == 0x02) { // press
-                    emit(uinput_fd, EV_KEY, KEY_DATA, 1);
+                    emit(uinput_fd, EV_KEY, KEY_F24, 1);
                 } else if (state == 0x00) { // release
-                    emit(uinput_fd, EV_KEY, KEY_DATA, 0);
+                    emit(uinput_fd, EV_KEY, KEY_F24, 0);
                 }
                 emit(uinput_fd, EV_SYN, SYN_REPORT, 0);
             }
@@ -132,21 +132,21 @@ int main(void)
 
                     // --- Handle Left Button (Bit 0x01) ---
                     if ((current_bits & 0x01) && !left_is_down) {
-                        emit(uinput_fd, EV_KEY, KEY_LEFTSHIFT, 1);
+                        emit(uinput_fd, EV_KEY, KEY_F23, 1);
                         left_is_down = 1;
                     }
                     else if (!(current_bits & 0x01) && left_is_down) {
-                        emit(uinput_fd, EV_KEY, KEY_LEFTSHIFT, 0);
+                        emit(uinput_fd, EV_KEY, KEY_F23, 0);
                         left_is_down = 0;
                     }
 
                     // --- Handle Right Button (Bit 0x02) ---
                     if ((current_bits & 0x02) && !right_is_down) {
-                        emit(uinput_fd, EV_KEY, KEY_C, 1);
+                        emit(uinput_fd, EV_KEY, KEY_F22, 1);
                         right_is_down = 1;
                     }
                     else if (!(current_bits & 0x02) && right_is_down) {
-                        emit(uinput_fd, EV_KEY, KEY_C, 0);
+                        emit(uinput_fd, EV_KEY, KEY_F22, 0);
                         right_is_down = 0;
                     }
 
@@ -158,9 +158,9 @@ int main(void)
             // --- scroll press ---
             else if (code == 0xf0) {
                 if (state == 0x23 && extra == 0x01) { // press
-                    emit(uinput_fd, EV_KEY, KEY_V, 1);
+                    emit(uinput_fd, EV_KEY, KEY_F21, 1);
                 } else if (state == 0x23 && extra == 0x00) { // release
-                    emit(uinput_fd, EV_KEY, KEY_V, 0);
+                    emit(uinput_fd, EV_KEY, KEY_F21, 0);
                 }
                 emit(uinput_fd, EV_SYN, SYN_REPORT, 0);
             }
