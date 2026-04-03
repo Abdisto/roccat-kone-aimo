@@ -31,16 +31,6 @@
         cmakeFlags = [
           "-DCMAKE_BUILD_TYPE=Release"
         ];
-
-        installPhase = ''
-          mkdir -p $out/bin
-          cp roccat_virtual $out/bin/
-        '';
-      };
-
-      apps.${system}.default = {
-        type = "app";
-        program = "${self.packages.${system}.default}/bin/roccat_virtual";
       };
     };
 }
