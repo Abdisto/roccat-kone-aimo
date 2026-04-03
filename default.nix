@@ -4,7 +4,7 @@ pkgs.stdenv.mkDerivation {
   pname = "roccat-kone-aimo-virtual";
   version = "1.0.0";
 
-  src = ./.; # Points to your current directory (where main.c and Makefile are)
+  src = ./src;
 
   nativeBuildInputs = with pkgs; [
     pkg-config
