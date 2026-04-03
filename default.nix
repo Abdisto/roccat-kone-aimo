@@ -15,8 +15,6 @@ pkgs.stdenv.mkDerivation {
     hidapi
   ];
 
-  # Nix expects a 'make install' target. 
-  # If your Makefile doesn't have one, we can define the install phase here:
   installPhase = ''
     mkdir -p $out/bin
     cp roccat_virtual $out/bin/
