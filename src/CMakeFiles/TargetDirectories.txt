@@ -1,7 +1,0 @@
-/home/abdist/Git/hidapi/hidtest/CMakeFiles/roccat_kone_aimo_hidraw.dir
-/home/abdist/Git/hidapi/hidtest/CMakeFiles/edit_cache.dir
-/home/abdist/Git/hidapi/hidtest/CMakeFiles/rebuild_cache.dir
-/home/abdist/Git/hidapi/hidtest/CMakeFiles/list_install_components.dir
-/home/abdist/Git/hidapi/hidtest/CMakeFiles/install.dir
-/home/abdist/Git/hidapi/hidtest/CMakeFiles/install/local.dir
-/home/abdist/Git/hidapi/hidtest/CMakeFiles/install/strip.dir

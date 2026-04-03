@@ -1,7 +1,0 @@
-{
-	"InstallScripts" : 
-	[
-		"/home/abdist/Git/hidapi/hidtest/cmake_install.cmake"
-	],
-	"Parallel" : false
-}

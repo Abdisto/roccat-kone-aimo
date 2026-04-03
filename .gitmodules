@@ -1,0 +1,3 @@
+[submodule "external/hidapi"]
+	path = external/hidapi
+	url = http://github.com/libusb/hidapi.git
