@@ -30,6 +30,8 @@ int setup_virtual_device() {
     ioctl(fd, UI_SET_KEYBIT, KEY_F23);
     ioctl(fd, UI_SET_KEYBIT, KEY_F22);
     ioctl(fd, UI_SET_KEYBIT, KEY_F21);
+    ioctl(fd, UI_SET_KEYBIT, KEY_F20);
+    ioctl(fd, UI_SET_KEYBIT, KEY_F19);
 
     struct uinput_setup usetup = {0};
     usetup.id.bustype = BUS_USB;
@@ -125,10 +127,10 @@ int main(void)
             }
 
             // --- EasyShift+ mouse buttons (EF 02 XX) ---
-            else if (buf[2] == 0xef) {
+            else if (code == 0xef) {
                 // We expect buf[3] to be 0x02 for these specific button events
-                if (buf[3] == 0x02) {
-                    int current_bits = buf[4]; // This is 00, 01, 02, or 03
+                if (state == 0x02) {
+                    int current_bits = extra; // This is 00, 01, 02, or 03
 
                     // --- Handle Left Button (Bit 0x01) ---
                     if ((current_bits & 0x01) && !left_is_down) {
@@ -155,12 +157,28 @@ int main(void)
                 }
             }
 
-            // --- scroll press ---
+            // --- scroll buttons down, left, right ---
             else if (code == 0xf0) {
-                if (state == 0x23 && extra == 0x01) { // press
-                    emit(uinput_fd, EV_KEY, KEY_F21, 1);
-                } else if (state == 0x23 && extra == 0x00) { // release
-                    emit(uinput_fd, EV_KEY, KEY_F21, 0);
+                if (state == 0x23) { // press down
+                    if (extra == 0x01) {
+                        emit(uinput_fd, EV_KEY, KEY_F21, 1);
+                    } else if (extra == 0x00) { // release
+                        emit(uinput_fd, EV_KEY, KEY_F21, 0);
+                    }
+                }
+                else if (state == 0x21) { // press left
+                    if (extra == 0x01) {
+                        emit(uinput_fd, EV_KEY, KEY_F20, 1);
+                    } else if (extra == 0x00) { // release
+                        emit(uinput_fd, EV_KEY, KEY_F20, 0);
+                    }
+                }
+                else if (state == 0x22) { // press right
+                    if (extra == 0x01) {
+                        emit(uinput_fd, EV_KEY, KEY_F19, 1);
+                    } else if (extra == 0x00) { // release
+                        emit(uinput_fd, EV_KEY, KEY_F19, 0);
+                    }
                 }
                 emit(uinput_fd, EV_SYN, SYN_REPORT, 0);
             }
