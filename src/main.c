@@ -85,7 +85,7 @@ int main(void)
     }
 
     // Set the hid_read() function to be non-blocking.
-    hid_set_nonblocking(handle, 1);
+    hid_set_nonblocking(handle, 0);
 
 #ifdef __linux__
     int uinput_fd = setup_virtual_device();
@@ -103,9 +103,9 @@ int main(void)
         if (res <= 0) continue;
 
         // debug
-        for (int i = 0; i < res; i++)
-            printf("%02x ", buf[i]);
-        printf("\n");
+        // for (int i = 0; i < res; i++)
+        //     printf("%02x ", buf[i]);
+        // printf("\n");
 
 #ifdef __linux__
         if (uinput_fd < 0) continue;
